@@ -118,7 +118,7 @@ uint32_t ulTargetProtocolAddress, ulSenderProtocolAddress;
 	pxARPHeader = &( pxARPFrame->xARPHeader );
 
 	/* The field ulSenderProtocolAddress is badly aligned, copy byte-by-byte. */
-	( void ) memcpy( ( void * )&( ulSenderProtocolAddress ), ( const void * )pxARPHeader->ucSenderProtocolAddress, sizeof( ulSenderProtocolAddress ) );
+	( void ) memcpy( ( void * )&( ulSenderProtocolAddress ), ( void * )pxARPHeader->ucSenderProtocolAddress, sizeof( ulSenderProtocolAddress ) );
 	/* The field ulTargetProtocolAddress is well-aligned, a 32-bits copy. */
 	ulTargetProtocolAddress = pxARPHeader->ulTargetProtocolAddress;
 
@@ -191,7 +191,7 @@ uint32_t ulTargetProtocolAddress, ulSenderProtocolAddress;
 
 #if( ipconfigUSE_ARP_REMOVE_ENTRY != 0 )
 
-	uint32_t ulARPRemoveCacheEntryByMac( const MACAddress_t * pxMACAddress )
+	uint32_t ulARPRemoveCacheEntryByMac(const MACAddress_t* pxMACAddress)
 	{
 	BaseType_t x;
 	uint32_t lResult = 0;
@@ -264,7 +264,12 @@ uint8_t ucMinAgeFound = 0U;
 					is relaxed in this case and a return is permitted as an
 					optimisation. */
 					xARPCache[ x ].ucAge = ( uint8_t ) ipconfigMAX_ARP_AGE;
-					xARPCache[ x ].ucValid = ( uint8_t ) pdTRUE;					
+					xARPCache[ x ].ucValid = ( uint8_t ) pdTRUE;
+
+					/* MISRA rule 15.5 relaxed for reduced complexity. Not putting
+					 * a return here will increase cyclomatic complexity in later
+					 * part of the code */
+					/* coverity[misra_c_2012_rule_15_5_violation] */
 					return;
 				}
 
@@ -306,7 +311,7 @@ uint8_t ucMinAgeFound = 0U;
 				ucMinAgeFound = xARPCache[ x ].ucAge;
 				xUseEntry = x;
 			}
-			else
+			else    /* Added to suppress MISRA rule 15.7 violation */
 			{
 				/* Do nothing. */
 			}
@@ -353,7 +358,7 @@ uint8_t ucMinAgeFound = 0U;
 		}
 		else
 		{
-			/* Do nothing. (pxMACAddress == NULL) and (xIPEntry > 0)
+			/* Do nothing. (pxMACAddress = NULL) and (xIPEntry > 0)
 			 * Implies that an IP address was found but we don't have
 			 * a MAC address for it. Therefore, no action required */
 		}
@@ -372,7 +377,7 @@ uint8_t ucMinAgeFound = 0U;
 		{
 			/* Does this row in the ARP cache table hold an entry for the MAC
 			address being searched? */
-			if( memcmp( pxMACAddress->ucBytes, xARPCache[ x ].xMACAddress.ucBytes, sizeof( MACAddress_t ) ) == 0 )
+			if( ( void ) memcmp( pxMACAddress->ucBytes, xARPCache[ x ].xMACAddress.ucBytes, sizeof( MACAddress_t ) ) == 0 )
 			{
 				*pulIPAddress = xARPCache[ x ].ulIPAddress;
 				eReturn = eARPCacheHit;
@@ -647,9 +652,12 @@ ARPPacket_t *pxARPPacket;
 		xARPHeader.xTargetHardwareAddress;
 	*/
 
-	( void ) memcpy( ( void * ) pxARPPacket, ( const void * )xDefaultPartARPPacketHeader, sizeof( xDefaultPartARPPacketHeader ) );
-	( void ) memcpy( ( void * ) pxARPPacket->xEthernetHeader.xSourceAddress.ucBytes, ( const void * ) ipLOCAL_MAC_ADDRESS, ( size_t )ipMAC_ADDRESS_LENGTH_BYTES );
-	( void ) memcpy( ( void * ) pxARPPacket->xARPHeader.xSenderHardwareAddress.ucBytes, ( const void * )ipLOCAL_MAC_ADDRESS, ( size_t )ipMAC_ADDRESS_LENGTH_BYTES );
+	/* Also, for rule 21.15 regarding using same pointer-to-x types for memcpy,
+	 * below is done intentionally here and thus the rule is relaxed         */
+	/* coverity[misra_c_2012_rule_21_15_violation] */
+	( void ) memcpy( ( void * ) pxARPPacket, ( const void* )xDefaultPartARPPacketHeader, sizeof( xDefaultPartARPPacketHeader ) );
+	( void ) memcpy( ( void * ) pxARPPacket->xEthernetHeader.xSourceAddress.ucBytes, ( void * ) ipLOCAL_MAC_ADDRESS, ( size_t )ipMAC_ADDRESS_LENGTH_BYTES );
+	( void ) memcpy( ( void * ) pxARPPacket->xARPHeader.xSenderHardwareAddress.ucBytes, ( void * )ipLOCAL_MAC_ADDRESS, ( size_t )ipMAC_ADDRESS_LENGTH_BYTES );
 
 	( void ) memcpy( ( void * )pxARPPacket->xARPHeader.ucSenderProtocolAddress, ( void * )ipLOCAL_IP_ADDRESS_POINTER, sizeof( pxARPPacket->xARPHeader.ucSenderProtocolAddress ) );
 	pxARPPacket->xARPHeader.ulTargetProtocolAddress = pxNetworkBuffer->ulIPAddress;
