@@ -121,7 +121,7 @@ uint32_t ulTargetProtocolAddress, ulSenderProtocolAddress;
 	pxARPHeader = &( pxARPFrame->xARPHeader );
 
 	/* The field ulSenderProtocolAddress is badly aligned, copy byte-by-byte. */
-	memcpy( ( void *)&( ulSenderProtocolAddress ), ( void * )pxARPHeader->ucSenderProtocolAddress, sizeof( ulSenderProtocolAddress ) );
+	( void ) memcpy( ( void *)&( ulSenderProtocolAddress ), ( void * )pxARPHeader->ucSenderProtocolAddress, sizeof( ulSenderProtocolAddress ) );
 	/* The field ulTargetProtocolAddress is well-aligned, a 32-bits copy. */
 	ulTargetProtocolAddress = pxARPHeader->ulTargetProtocolAddress;
 
@@ -151,17 +151,17 @@ uint32_t ulTargetProtocolAddress, ulSenderProtocolAddress;
 					{
 						/* A double IP address is detected! */
 						/* Give the sources MAC address the value of the broadcast address, will be swapped later */
-						memcpy( pxARPFrame->xEthernetHeader.xSourceAddress.ucBytes, xBroadcastMACAddress.ucBytes, sizeof( xBroadcastMACAddress ) );
-						memset( pxARPHeader->xTargetHardwareAddress.ucBytes, 0, sizeof( MACAddress_t ) );
+						( void ) memcpy( pxARPFrame->xEthernetHeader.xSourceAddress.ucBytes, xBroadcastMACAddress.ucBytes, sizeof( xBroadcastMACAddress ) );
+						( void ) memset( pxARPHeader->xTargetHardwareAddress.ucBytes, (int)'\0', sizeof( MACAddress_t ) );
 						pxARPHeader->ulTargetProtocolAddress = 0UL;
 					}
 					else
 					{
-						memcpy( pxARPHeader->xTargetHardwareAddress.ucBytes, pxARPHeader->xSenderHardwareAddress.ucBytes, sizeof( MACAddress_t ) );
+						( void ) memcpy( pxARPHeader->xTargetHardwareAddress.ucBytes, pxARPHeader->xSenderHardwareAddress.ucBytes, sizeof( MACAddress_t ) );
 						pxARPHeader->ulTargetProtocolAddress = ulSenderProtocolAddress;
 					}
-					memcpy( pxARPHeader->xSenderHardwareAddress.ucBytes, ( void * ) ipLOCAL_MAC_ADDRESS, sizeof( MACAddress_t ) );
-					memcpy( ( void* )pxARPHeader->ucSenderProtocolAddress, ( void* )ipLOCAL_IP_ADDRESS_POINTER, sizeof( pxARPHeader->ucSenderProtocolAddress ) );
+					( void ) memcpy( pxARPHeader->xSenderHardwareAddress.ucBytes, ( void * ) ipLOCAL_MAC_ADDRESS, sizeof( MACAddress_t ) );
+					( void ) memcpy( ( void* )pxARPHeader->ucSenderProtocolAddress, ( void* )ipLOCAL_IP_ADDRESS_POINTER, sizeof( pxARPHeader->ucSenderProtocolAddress ) );
 
 					eReturn = eReturnEthernetFrame;
 				}
@@ -176,7 +176,7 @@ uint32_t ulTargetProtocolAddress, ulSenderProtocolAddress;
 					if( ulSenderProtocolAddress == *ipLOCAL_IP_ADDRESS_POINTER )
 					{
 						xARPHadIPClash = pdTRUE;
-						memcpy( xARPClashMacAddress.ucBytes, pxARPHeader->xSenderHardwareAddress.ucBytes, sizeof( xARPClashMacAddress.ucBytes ) );
+						( void ) memcpy( xARPClashMacAddress.ucBytes, pxARPHeader->xSenderHardwareAddress.ucBytes, sizeof( xARPClashMacAddress.ucBytes ) );
 					}
 				}
 				#endif /* ipconfigARP_USE_CLASH_DETECTION */
@@ -205,7 +205,7 @@ uint32_t ulTargetProtocolAddress, ulSenderProtocolAddress;
 			if( ( memcmp( xARPCache[ x ].xMACAddress.ucBytes, pxMACAddress->ucBytes, sizeof( pxMACAddress->ucBytes ) ) == 0 ) )
 			{
 				lResult = xARPCache[ x ].ulIPAddress;
-				memset( &xARPCache[ x ], '\0', sizeof( xARPCache[ x ] ) );
+				( void ) memset( &xARPCache[ x ], '\0', sizeof( xARPCache[ x ] ) );
 				break;
 			}
 		}
@@ -325,8 +325,9 @@ uint8_t ucMinAgeFound = 0U;
 			{
 				/* Both the MAC address as well as the IP address were found in
 				different locations: clear the entry which matches the
-				IP-address */				
-				memset( &xARPCache[ xIpEntry ], (int)'\0', sizeof( xARPCache[ xIpEntry ] ) );
+				IP-address */
+				/* Silence MISRA warning about unused return value */
+				( void ) memset( &xARPCache[ xIpEntry ], (int)'\0', sizeof( xARPCache[ xIpEntry ] ) );
 			}
 		}
 		else if( xIpEntry >= 0 )
@@ -344,7 +345,7 @@ uint8_t ucMinAgeFound = 0U;
 
 		if( pxMACAddress != NULL )
 		{
-			memcpy( xARPCache[ xUseEntry ].xMACAddress.ucBytes, pxMACAddress->ucBytes, sizeof( pxMACAddress->ucBytes ) );
+			( void ) memcpy( xARPCache[ xUseEntry ].xMACAddress.ucBytes, pxMACAddress->ucBytes, sizeof( pxMACAddress->ucBytes ) );
 
 			iptraceARP_TABLE_ENTRY_CREATED( ulIPAddress, (*pxMACAddress) );
 			/* And this entry does not need immediate attention */
@@ -398,7 +399,7 @@ uint32_t ulAddressToLookup;
 	if( *pulIPAddress == ipLLMNR_IP_ADDR )	/* Is in network byte order. */
 	{
 		/* The LLMNR IP-address has a fixed virtual MAC address. */
-		memcpy( pxMACAddress->ucBytes, xLLMNR_MacAdress.ucBytes, sizeof( MACAddress_t ) );
+		( void ) memcpy( pxMACAddress->ucBytes, xLLMNR_MacAdress.ucBytes, sizeof( MACAddress_t ) );
 		eReturn = eARPCacheHit;
 	}
 	else
@@ -407,7 +408,7 @@ uint32_t ulAddressToLookup;
 		( *pulIPAddress == xNetworkAddressing.ulBroadcastAddress ) )/* Or a local broadcast address, eg 192.168.1.255? */
 	{
 		/* This is a broadcast so uses the broadcast MAC address. */
-		memcpy( pxMACAddress->ucBytes, xBroadcastMACAddress.ucBytes, sizeof( MACAddress_t ) );
+		( void ) memcpy( pxMACAddress->ucBytes, xBroadcastMACAddress.ucBytes, sizeof( MACAddress_t ) );
 		eReturn = eARPCacheHit;
 	}
 	else if( *ipLOCAL_IP_ADDRESS_POINTER == 0UL )
@@ -500,7 +501,7 @@ eARPLookupResult_t eReturn = eARPCacheMiss;
 			else
 			{
 				/* A valid entry was found. */
-				memcpy( pxMACAddress->ucBytes, xARPCache[ x ].xMACAddress.ucBytes, sizeof( MACAddress_t ) );
+				( void ) memcpy( pxMACAddress->ucBytes, xARPCache[ x ].xMACAddress.ucBytes, sizeof( MACAddress_t ) );
 				eReturn = eARPCacheHit;
 			}
 			break;
@@ -604,11 +605,7 @@ NetworkBufferDescriptor_t *pxNetworkBuffer;
 		if( xIsCallingFromIPTask() != 0 )
 		{
 			/* Only the IP-task is allowed to call this function directly. */
-			if( xNetworkInterfaceOutput(pxNetworkBuffer, pdTRUE) != pdTRUE )
-			{
-				/* Not sent? Bad news. Maybe link is down? */
-				FreeRTOS_printf( ("xNetworkInterfaceOutput failed. Link down?\n") );
-			}
+			( void ) xNetworkInterfaceOutput( pxNetworkBuffer, pdTRUE );
 		}
 		else
 		{
@@ -654,11 +651,11 @@ ARPPacket_t *pxARPPacket;
          * be a MISRA c2012 rule 11.18 violation.
 	 * Also, for rule 21.15 regarding using same pointer-to-x types for memcpy,
          * below is done intentionally here and thus the rule is relaxed         */
-	memcpy( ( void * ) pxARPPacket, (const void * ) xDefaultPartARPPacketHeader, sizeof( xDefaultPartARPPacketHeader ) );
-	memcpy( ( void * ) pxARPPacket->xEthernetHeader.xSourceAddress.ucBytes , ( void * ) ipLOCAL_MAC_ADDRESS, ( size_t ) ipMAC_ADDRESS_LENGTH_BYTES );
-	memcpy( ( void * ) pxARPPacket->xARPHeader.xSenderHardwareAddress.ucBytes, ( void * ) ipLOCAL_MAC_ADDRESS, ( size_t ) ipMAC_ADDRESS_LENGTH_BYTES );
+	( void ) memcpy( ( void * ) pxARPPacket, (const void * ) xDefaultPartARPPacketHeader, sizeof( xDefaultPartARPPacketHeader ) );
+	( void ) memcpy( ( void * ) pxARPPacket->xEthernetHeader.xSourceAddress.ucBytes , ( void * ) ipLOCAL_MAC_ADDRESS, ( size_t ) ipMAC_ADDRESS_LENGTH_BYTES );
+	( void ) memcpy( ( void * ) pxARPPacket->xARPHeader.xSenderHardwareAddress.ucBytes, ( void * ) ipLOCAL_MAC_ADDRESS, ( size_t ) ipMAC_ADDRESS_LENGTH_BYTES );
 
-	memcpy( ( void* )pxARPPacket->xARPHeader.ucSenderProtocolAddress, ( void* )ipLOCAL_IP_ADDRESS_POINTER, sizeof( pxARPPacket->xARPHeader.ucSenderProtocolAddress ) );
+	( void ) memcpy( ( void* )pxARPPacket->xARPHeader.ucSenderProtocolAddress, ( void* )ipLOCAL_IP_ADDRESS_POINTER, sizeof( pxARPPacket->xARPHeader.ucSenderProtocolAddress ) );
 	pxARPPacket->xARPHeader.ulTargetProtocolAddress = pxNetworkBuffer->ulIPAddress;
 
 	pxNetworkBuffer->xDataLength = sizeof( ARPPacket_t );
@@ -673,7 +670,7 @@ void FreeRTOS_ClearARP( void )
 	 *
 	 * MISRA rule 17.7 relaxed. The return value is not 
 	 * required to be used. Also improves readability    */
-	memset( xARPCache, (int)'\0', sizeof( xARPCache ) );
+	( void ) memset( xARPCache, (int)'\0', sizeof( xARPCache ) );
 }
 /*-----------------------------------------------------------*/
 
