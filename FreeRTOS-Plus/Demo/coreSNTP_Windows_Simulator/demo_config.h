@@ -73,8 +73,8 @@ extern void vLoggingPrintf( const char * pcFormatString,
  *
  * @note According to the SNTPv4 specification, the polling interval MUST NOT be less
  * than 15 seconds for responsible use of time servers by SNTP clients.
- * 
- * 
+ *
+ *
  * #define democonfigSNTP_CLIENT_POLLING_INTERVAL_SECONDS                  ( 16 )
  */
 
@@ -124,7 +124,10 @@ extern void vLoggingPrintf( const char * pcFormatString,
  * the client and the corresponding NTP/SNTP servers, in democonfigLIST_OF_TIME_SERVERS, for authenticating
  * the SNTP communication between the client and server.
  *
- * The ID for a key usually represents the ID used to reference the symmetric key in the NTP/SNTP server system.
+ * #define democonfigLIST_OF_AUTHENTICATION_SYMMETRIC_KEYS "<hexstring-key-1>", "<hexstring-key-2>", NULL
+ * /
+
+ /** The ID for a key usually represents the ID used to reference the symmetric key in the NTP/SNTP server system.
  *
  * @note This Key IDs should be configured as a comma-separated list of integer Key IDs that match the order of
  * keys in democonfigdemoconfigLIST_OF_AUTHENTICATION_SYMMETRIC_KEYS. If there is a NULL (or no key) in the list
