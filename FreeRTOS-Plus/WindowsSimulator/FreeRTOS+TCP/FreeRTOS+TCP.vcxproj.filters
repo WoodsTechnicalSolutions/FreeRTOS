@@ -252,4 +252,7 @@
     </ClInclude>
     <ClInclude Include="FreeRTOSIPConfig.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\FreeRTOS-Kernel\FreeRTOS-Kernel.vcxproj" />
+  </ItemGroup>
 </Project>
